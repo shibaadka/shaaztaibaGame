@@ -53,7 +53,7 @@
         <div class="modal">
           <div style="font-size:40px">🎉💖</div>
           <div class="big">All hearts caught!</div>
-          <div class="small">You helped Shaaz keep Taiba’s heart safe! 💞<br>They’re celebrating and can’t wait to celebrate with you too!<br><strong>Save the date: 18th December 2025, Adyar Garden  , Mangalore at 7.00 PM onwards</strong></div>
+          <div class="small">You helped Shaaz keep Taiba’s heart safe! 💞<br>They’re celebrating and can’t wait to celebrate with you too!<br><strong>Save the date: 25th December 2025, The Grand Ballroom, Dubai</strong></div>
           <a class="btn" id="whatsappBtn" href="#">Share on WhatsApp</a>
           <br><button class="btn" id="replay" style="background:#2b6cb0; margin-top:12px">Play Again</button>
         </div>
@@ -80,13 +80,17 @@
     let lastTime = 0;
     let dragging=false, dragOffset=0;
 
-function reset() {
-  sky.innerHTML=''; hearts=[]; spawned=0; caught=0;
-  leftCountEl.textContent=TOTAL; caughtEl.textContent='0'; overlay.style.display='none';
-  updateSizes();
-  // Spawn the first heart immediately
-  for (let i = 0; i < TOTAL; i++) spawnNext();
-}
+    function reset(){
+      sky.innerHTML=''; hearts=[]; spawned=0; caught=0;
+      leftCountEl.textContent=TOTAL; caughtEl.textContent='0'; overlay.style.display='none';
+      updateSizes();
+      // Start with the first heart immediately
+      spawnNext();
+      player.style.bottom='18px';
+      player.style.left=(playerX+playerW/2)+'px';
+      taiba.style.top='12px';
+    }
+
     function updateSizes(){
       stageRect=stage.getBoundingClientRect(); stageW=stageRect.width; stageH=stageRect.height;
       playerW=player.offsetWidth; playerX=(stageW-playerW)/2; player.style.left=(playerX+playerW/2)+'px';
@@ -100,14 +104,43 @@ function reset() {
 
     function spawnNext(){
       if(spawned>=TOTAL) return;
-      setTimeout(()=>{ createHeart(); spawned++; leftCountEl.textContent=Math.max(0,TOTAL-spawned); }, 800);
+      createHeart(); spawned++; leftCountEl.textContent=Math.max(0,TOTAL-spawned);
     }
 
     function loop(ts){
       if(!lastTime) lastTime=ts; const dt=(ts-lastTime)/1000; lastTime=ts;
       for(let i=hearts.length-1;i>=0;i--){
-        const h=hearts[i]; let y=parseFloat(h.dataset.y);
-        const sp=parseFloat(h.dataset.speed); y+=sp*dt; h.dataset.y=y; h.style.top=y+'px';
+        const h=hearts[i]; let y=parseFloat(h.dataset.y); const sp=parseFloat(h.dataset.speed); y+=sp*dt; h.dataset.y=y; h.style.top=y+'px';
         const hx=parseFloat(h.dataset.x); const playerTop=stageH-player.offsetHeight-18;
         const playerLeft=playerX; const playerRight=playerX+playerW; const heartX=hx; const heartY=y;
-        if(heartY>=playerTop && heartY<=stageH && heart
+        if(heartY>=playerTop && heartY<=stageH && heartX>=playerLeft && heartX<=playerRight){
+          caught++; caughtEl.textContent=caught; h.remove(); hearts.splice(i,1);
+          if(caught< TOTAL) spawnNext();
+        } else if(heartY>stageH+40){ h.remove(); hearts.splice(i,1); if(caught< TOTAL) spawnNext(); }
+      }
+      if(caught>=TOTAL){ showCelebration(); return; }
+      requestAnimationFrame(loop);
+    }
+
+    function showCelebration(){
+      player.style.bottom='50%'; player.style.left='45%';
+      taiba.style.top='45%';
+      audio.play();
+      setTimeout(()=>{ overlay.style.display='flex';
+        const message = encodeURIComponent("I helped Shaaz not break Taiba's heart! 💖 Join them on their wedding day: {{URL}}\nSee you there!");
+        whatsappBtn.href = `https://wa.me/?text=${message}`;
+      }, 2000);
+    }
+
+    player.addEventListener('pointerdown', e=>{ dragging=true; dragOffset=e.clientX-player.getBoundingClientRect().left; player.setPointerCapture(e.pointerId); });
+    window.addEventListener('pointermove', e=>{ if(!dragging) return; let nx=e.clientX-stageRect.left-dragOffset; playerX=Math.max(0,Math.min(stageW-playerW,nx)); player.style.left=(playerX+playerW/2)+'px'; });
+    window.addEventListener('pointerup', e=>{ dragging=false; });
+
+    replayBtn.addEventListener('click',()=>{ reset(); });
+    window.addEventListener('resize',()=>{ updateSizes(); });
+
+    updateSizes(); reset();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
