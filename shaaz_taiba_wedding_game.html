@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shaaz ♥ Taiba — Catch the Hearts</title>
+  <style>
+    :root{--bg:#fdf6f0;--panel:#ffffff;--accent:#ff4d6d;--text:#2b2b2b}
+    html,body{height:100%;margin:0;font-family:'Playfair Display',serif,system-ui; background:linear-gradient(180deg,#fffaf6 0%, #f7f0eb 60%); color:var(--text)}
+    .wrap{max-width:900px;margin:20px auto;padding:18px;text-align:center;}
+    .stage{position:relative;background:rgba(255,255,255,0.3);border-radius:16px;overflow:hidden;height:70vh;min-height:520px;box-shadow:0 12px 30px rgba(0,0,0,0.15)}
+    .sky{position:absolute;inset:0;}
+    .heart{position:absolute;font-size:32px;pointer-events:none;transform:translate(-50%,-50%);filter:drop-shadow(0 4px 10px rgba(0,0,0,0.15));}
+    .player{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:110px;height:110px;background:linear-gradient(180deg,#fff 0%,#f0f6ff 100%);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.25);touch-action:none;transition:all 1s ease;}
+    .player .face{font-size:28px}
+    .player .name{font-size:14px;margin-top:6px;color:#2b2b2b;font-weight:700}
+    .taiba{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:100px;height:100px;background:linear-gradient(180deg,#ffe6f0 0%,#ffd6e8 100%);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.2);z-index:5;transition:all 1s ease}
+    .taiba .face{font-size:28px}
+    .taiba .name{font-size:14px;margin-top:6px;color:#2b2b2b;font-weight:700}
+    .hud{position:absolute;top:12px;left:12px;background:rgba(255,255,255,0.7);padding:8px 12px;border-radius:12px;display:flex;gap:12px;align-items:center; font-family:sans-serif}
+    .hud .count{font-weight:800;color:var(--accent);}
+    .cta{position:absolute;top:12px;right:12px;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,0.5); font-family:sans-serif; font-weight:700; color:#2b2b2b}
+    .floor{position:absolute;left:0;right:0;height:60px;bottom:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.05));pointer-events:none}
+    .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:40}
+    .modal{background:var(--panel);padding:28px;border-radius:16px;max-width:520px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.15); font-family:'Playfair Display',serif;}
+    .big{font-size:22px;margin:12px 0}
+    .btn{display:inline-block;padding:12px 18px;border-radius:12px;background:var(--accent);color:white;text-decoration:none;font-weight:700;box-shadow:0 8px 20px rgba(255,77,109,0.18); margin-top:10px}
+    .small{font-size:14px;color:#555555;line-height:1.5}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 style="margin-bottom:12px; font-family:'Playfair Display',serif;">Shaaz ♥ Taiba</h1>
+    <p class="small" style="margin-bottom:18px; font-size:16px;">💖 Love is in the air! Shaaz needs your help to catch all of Taiba's hearts. Drag him carefully and don’t let any heart fall!</p>
+
+    <div class="stage" id="stage">
+      <div class="sky" id="sky"></div>
+      <div class="taiba" id="taiba">
+        <div class="face">💃</div>
+        <div class="name">Taiba</div>
+      </div>
+      <div class="hud">
+        <div>Hearts left: <span class="count" id="left">3</span></div>
+        <div>Caught: <span class="count" id="caught">0</span></div>
+      </div>
+      <div class="cta">Drag Shaaz to catch the hearts!</div>
+      <div class="player" id="player">
+        <div class="face">🕺</div>
+        <div class="name">Shaaz</div>
+      </div>
+      <div class="floor"></div>
+      <div class="overlay" id="overlay" style="display:none">
+        <div class="modal">
+          <div style="font-size:40px">🎉💖</div>
+          <div class="big">All hearts caught!</div>
+          <div class="small">You helped Shaaz keep Taiba’s heart safe! 💞<br>They’re celebrating and can’t wait to celebrate with you too!<br><strong>Save the date: 18th December 2025, Adyar Garden  , Mangalore at 7.00 PM onwards</strong></div>
+          <a class="btn" id="whatsappBtn" href="#">Share on WhatsApp</a>
+          <br><button class="btn" id="replay" style="background:#2b6cb0; margin-top:12px">Play Again</button>
+        </div>
+      </div>
+      <audio id="celebrationAudio" src="https://cdn.pixabay.com/download/audio/2021/09/14/audio_1cb2b8f7b6.mp3?filename=party-horn-6108.mp3" preload="auto"></audio>
+    </div>
+  </div>
+
+  <script>
+    const TOTAL = 3;
+    const stage = document.getElementById('stage');
+    const sky = document.getElementById('sky');
+    const player = document.getElementById('player');
+    const taiba = document.getElementById('taiba');
+    const leftCountEl = document.getElementById('left');
+    const caughtEl = document.getElementById('caught');
+    const overlay = document.getElementById('overlay');
+    const whatsappBtn = document.getElementById('whatsappBtn');
+    const replayBtn = document.getElementById('replay');
+    const audio = document.getElementById('celebrationAudio');
+
+    let stageRect, playerX, playerW, stageW, stageH;
+    let hearts = [], spawned = 0, caught = 0;
+    let lastTime = 0;
+    let dragging=false, dragOffset=0;
+
+function reset() {
+  sky.innerHTML=''; hearts=[]; spawned=0; caught=0;
+  leftCountEl.textContent=TOTAL; caughtEl.textContent='0'; overlay.style.display='none';
+  updateSizes();
+  // Spawn the first heart immediately
+  for (let i = 0; i < TOTAL; i++) spawnNext();
+}
+    function updateSizes(){
+      stageRect=stage.getBoundingClientRect(); stageW=stageRect.width; stageH=stageRect.height;
+      playerW=player.offsetWidth; playerX=(stageW-playerW)/2; player.style.left=(playerX+playerW/2)+'px';
+    }
+
+    function createHeart(){
+      const el=document.createElement('div'); el.className='heart'; el.textContent='💖';
+      const x=Math.random()*(stageW-40)+20; el.dataset.x=x; el.dataset.y=-30; el.dataset.speed=40+Math.random()*15;
+      el.style.left=x+'px'; el.style.top='-30px'; sky.appendChild(el); hearts.push(el);
+    }
+
+    function spawnNext(){
+      if(spawned>=TOTAL) return;
+      setTimeout(()=>{ createHeart(); spawned++; leftCountEl.textContent=Math.max(0,TOTAL-spawned); }, 800);
+    }
+
+    function loop(ts){
+      if(!lastTime) lastTime=ts; const dt=(ts-lastTime)/1000; lastTime=ts;
+      for(let i=hearts.length-1;i>=0;i--){
+        const h=hearts[i]; let y=parseFloat(h.dataset.y);
+        const sp=parseFloat(h.dataset.speed); y+=sp*dt; h.dataset.y=y; h.style.top=y+'px';
+        const hx=parseFloat(h.dataset.x); const playerTop=stageH-player.offsetHeight-18;
+        const playerLeft=playerX; const playerRight=playerX+playerW; const heartX=hx; const heartY=y;
+        if(heartY>=playerTop && heartY<=stageH && heart
