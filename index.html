@@ -18,7 +18,7 @@
     .hud .count{font-weight:800;color:var(--accent);}
     .cta{position:absolute;top:12px;right:12px;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,0.5); font-family:sans-serif; font-weight:700; color:#2b2b2b}
     .floor{position:absolute;left:0;right:0;height:60px;bottom:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.05));pointer-events:none}
-    .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:40}
+    .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:40; background: rgba(255,255,255,1); /* solid white background */}
     .modal{background:var(--panel);padding:28px;border-radius:16px;max-width:520px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.15); font-family:'Great Vibes',cursive;}
     .big{font-size:22px;margin:12px 0}
     .btn{display:inline-block;padding:12px 18px;border-radius:12px;background:linear-gradient(135deg,#ff4d6d,#ff85a2);color:white;text-decoration:none;font-weight:700;box-shadow:0 8px 20px rgba(255,77,109,0.18); margin-top:10px; transition:0.3s;}
@@ -39,7 +39,7 @@
     <div class="stage" id="stage">
       <div class="sky" id="sky"></div>
       <div class="taiba" id="taiba" style="top:12px; left:50%; transform:translateX(-50%); background:transparent;">
-        <img src="taibacaricature?text=Taiba" alt="Taiba">
+        <img src="taiba2.png?text=Taiba" alt="Taiba">
       </div>
       <div class="hud">
         <div>Hearts left: <span class="count" id="left">3</span></div>
@@ -47,7 +47,7 @@
       </div>
       <div class="cta">Drag Shaaz to catch the hearts!</div>
       <div class="player" id="player" style="bottom:18px; left:50%; transform:translateX(-50%); background:transparent;">
-        <img src="shaazcaricature.jpg?text=Shaaz" alt="Shaaz">
+        <img src="shaazcaricature.png?text=Shaaz" alt="Shaaz">
       </div>
       <div class="floor"></div>
       <div class="overlay" id="overlay" style="display:none"></div>
