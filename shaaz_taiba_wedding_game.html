@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shaaz ♥ Taiba — Catch the Hearts</title>
+  <style>
+    :root{--bg:#0f1724;--panel:#0b1220;--accent:#ff4d6d;--text:#e6eef8}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#081123 0%, #071826 60%);color:var(--text)}
+    .wrap{max-width:900px;margin:20px auto;padding:18px}
+    .stage{position:relative;background:rgba(255,255,255,0.03);border-radius:12px;overflow:hidden;height:70vh;min-height:520px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .sky{position:absolute;inset:0;}
+    .heart{position:absolute;font-size:28px;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.6));transform:translate(-50%,-50%);}
+    .player{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:110px;height:110px;background:linear-gradient(180deg,#fff 0%,#f0f6ff 100%);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(0,0,0,0.5);}
+    .player .face{font-size:28px}
+    .player .name{font-size:13px;margin-top:6px;color:#111;font-weight:700}
+    .taiba{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:100px;height:100px;background:linear-gradient(180deg,#ffe6f0 0%,#ffd6e8 100%);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.3);z-index:5}
+    .taiba .face{font-size:28px}
+    .taiba .name{font-size:13px;margin-top:6px;color:#111;font-weight:700}
+    .hud{position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.25);padding:8px 12px;border-radius:10px;backdrop-filter:blur(6px);display:flex;gap:12px;align-items:center}
+    .hud .count{font-weight:800;color:var(--accent);}
+    .cta{position:absolute;top:12px;right:12px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.04);}
+    .floor{position:absolute;left:0;right:0;height:60px;bottom:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.35));pointer-events:none}
+    .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:40}
+    .modal{background:var(--panel);padding:22px;border-radius:12px;max-width:520px;text-align:center;box-shadow:0 20px 40px rgba(2,6,23,0.6)}
+    .big{font-size:20px;margin:12px 0}
+    .btn{display:inline-block;padding:10px 16px;border-radius:10px;background:var(--accent);color:white;text-decoration:none;font-weight:700;box-shadow:0 8px 20px rgba(255,77,109,0.18)}
+    .small{font-size:13px;color:#b7c5d8}
+    .controls{position:absolute;left:50%;bottom:0;transform:translateX(-50%);display:flex;gap:8px;padding:8px;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.25));width:100%;justify-content:center}
+    .touchZone{position:absolute;left:0;top:0;width:50%;height:100%;z-index:30}
+    .touchZone.right{left:50%}
+    @media (max-width:560px){.player{width:86px;height:86px}.heart{font-size:26px}.taiba{width:80px;height:80px}}    
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2 style="margin:0 0 12px">Shaaz ♥ Taiba — Catch the Hearts</h2>
+    <p class="small" style="margin:0 0 18px">Catch all 10 hearts Taiba sends down to unlock the wedding message!</p>
+
+    <div class="stage" id="stage">
+      <div class="sky" id="sky"></div>
+      <div class="taiba">
+        <div class="face">💃</div>
+        <div class="name">Taiba</div>
+      </div>
+      <div class="hud">
+        <div>Hearts left: <span class="count" id="left">10</span></div>
+        <div style="opacity:0.9">Caught: <span class="count" id="caught">0</span></div>
+      </div>
+      <div class="cta" id="cta">Tap or use ← → keys to move</div>
+
+      <div class="player" id="player" aria-hidden="true">
+        <div class="face">🕺</div>
+        <div class="name">Shaaz</div>
+      </div>
+
+      <div class="floor"></div>
+
+      <div class="overlay" id="overlay" style="display:none">
+        <div class="modal" id="modal">
+          <div style="font-size:36px">🎉</div>
+          <div class="big" id="modal-title">You saved the day!</div>
+          <div class="small" id="modal-sub">You helped Shaaz not break Taiba's heart 💖</div>
+          <div style="margin-top:14px">
+            <a class="btn" id="whatsappBtn" href="#">Share on WhatsApp</a>
+          </div>
+          <div style="margin-top:12px"><button class="btn" id="replay" style="background:#2b6cb0">Play Again</button></div>
+        </div>
+      </div>
+
+      <!-- Touch zones for mobile left/right -->
+      <div class="touchZone left" id="leftZone"></div>
+      <div class="touchZone right" id="rightZone"></div>
+
+    </div>
+
+    <p class="small" style="margin-top:12px">Tip: host this file (index.html) and share the link in WhatsApp. Customize names or artwork inside the code.</p>
+  </div>
+
+  <script>
+    const TOTAL = 10; // hearts to spawn
+    const stage = document.getElementById('stage');
+    const sky = document.getElementById('sky');
+    const player = document.getElementById('player');
+    const leftCountEl = document.getElementById('left');
+    const caughtEl = document.getElementById('caught');
+    const overlay = document.getElementById('overlay');
+    const modalTitle = document.getElementById('modal-title');
+    const modalSub = document.getElementById('modal-sub');
+    const whatsappBtn = document.getElementById('whatsappBtn');
+    const replayBtn = document.getElementById('replay');
+
+    let stageRect, playerX, playerW, stageW, stageH;
+    let hearts = [];
+    let spawned = 0;
+    let caught = 0;
+    let keys = {left:false,right:false};
+    let lastTime = 0;
+
+    function reset(){
+      sky.innerHTML = '';
+      hearts = [];
+      spawned = 0;
+      caught = 0;
+      leftCountEl.textContent = TOTAL;
+      caughtEl.textContent = '0';
+      overlay.style.display = 'none';
+      updateSizes();
+      requestAnimationFrame(loop);
+      spawnNext();
+    }
+
+    function updateSizes(){
+      stageRect = stage.getBoundingClientRect();
+      stageW = stageRect.width;
+      stageH = stageRect.height;
+      playerW = player.offsetWidth;
+      playerX = (stageW - playerW) / 2;
+      player.style.left = (playerX + playerW/2) + 'px';
+    }
+
+    function createHeart(){
+      const el = document.createElement('div');
+      el.className = 'heart';
+      el.textContent = '💖';
+      const x = Math.random() * (stageW - 40) + 20;
+      el.dataset.x = x;
+      el.dataset.y = -30;
+      el.dataset.speed = 50 + Math.random()*30; // slower speed
+      el.style.left = x + 'px';
+      el.style.top = '-30px';
+      sky.appendChild(el);
+      hearts.push(el);
+    }
+
+    function spawnNext(){
+      if (spawned >= TOTAL) return;
+      setTimeout(()=>{
+        createHeart();
+        spawned++;
+        leftCountEl.textContent = Math.max(0, TOTAL - spawned);
+      }, 800); // one at a time, slower interval
+    }
+
+    function loop(ts){
+      if (!lastTime) lastTime = ts;
+      const dt = (ts - lastTime) / 1000;
+      lastTime = ts;
+
+      const speed = 420; // px/sec
+      if (keys.left) playerX -= speed*dt;
+      if (keys.right) playerX += speed*dt;
+      playerX = Math.max(8, Math.min(stageW - playerW - 8, playerX));
+      player.style.left = (playerX + playerW/2) + 'px';
+
+      for (let i = hearts.length-1; i>=0; i--){
+        const h = hearts[i];
+        let y = parseFloat(h.dataset.y);
+        const sp = parseFloat(h.dataset.speed);
+        y += sp * dt;
+        h.dataset.y = y;
+        h.style.top = y + 'px';
+        const hx = parseFloat(h.dataset.x);
+        const playerTop = stageH - player.offsetHeight - 18;
+        const playerLeft = playerX + 8;
+        const playerRight = playerLeft + playerW - 16;
+        const heartX = hx;
+        const heartY = y;
+        if (heartY >= playerTop && heartY <= stageH && heartX >= playerLeft && heartX <= playerRight){
+          caught++;
+          caughtEl.textContent = caught;
+          h.remove();
+          hearts.splice(i,1);
+          if (caught < TOTAL) spawnNext();
+        } else if (heartY > stageH + 40){
+          h.remove();
+          hearts.splice(i,1);
+          if (spawned < TOTAL) spawnNext();
+        }
+      }
+
+      if (caught >= TOTAL){
+        showWin();
+        return;
+      }
+
+      requestAnimationFrame(loop);
+    }
+
+    function showWin(){
+      overlay.style.display = 'flex';
+      modalTitle.textContent = 'Congratulations!';
+      modalSub.textContent = "You helped Shaaz not break Taiba's heart 💖\nPlease be there for their wedding and not break both their hearts!";
+      const message = encodeURIComponent("I helped Shaaz not break Taiba's heart! 💖 Join them on their wedding day: {{URL}}\nSee you there! ✨");
+      whatsappBtn.href = `https://wa.me/?text=${message}`;
+    }
+
+    window.addEventListener('keydown', e=>{
+      if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
+      if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
+    });
+    window.addEventListener('keyup', e=>{
+      if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
+      if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
+    });
+
+    const leftZone = document.getElementById('leftZone');
+    const rightZone = document.getElementById('rightZone');
+    leftZone.addEventListener('touchstart', e=>{ e.preventDefault(); keys.left=true; });
+    leftZone.addEventListener('touchend', e=>{ e.preventDefault(); keys.left=false; });
+    rightZone.addEventListener('touchstart', e=>{ e.preventDefault(); keys.right=true; });
+    rightZone.addEventListener('touchend', e=>{ e.preventDefault(); keys.right=false; });
+
+    let dragging = false, dragOffset = 0;
+    player.addEventListener('pointerdown', e=>{ dragging=true; dragOffset = e.clientX - player.getBoundingClientRect().left; player.setPointerCapture(e.pointerId); });
+    window.addEventListener('pointermove', e=>{ if (!dragging) return; let nx = e.clientX - stageRect.left - dragOffset; playerX = Math.max(8, Math.min(stageW - playerW - 8, nx)); player.style.left = (playerX + playerW/2) + 'px'; });
+    window.addEventListener('pointerup', e=>{ dragging=false; });
+
+    replayBtn.addEventListener('click', ()=>{ reset(); });
+
+    window.addEventListener('resize', ()=>{ updateSizes(); });
+
+    updateSizes();
+    reset();
+  </script>
+</body>
+</html>
