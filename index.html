@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Shaaz ♥ Taiba — Catch the Hearts</title>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
   <style>
     :root{--bg:#fdf6f0;--panel:#ffffffcc;--accent:#ff4d6d;--text:#2b2b2b}
     html,body{height:100%;margin:0;font-family:'Dancing Script',cursive,serif; background:linear-gradient(180deg,#fffaf6 0%, #f7f0eb 70%); color:var(--text)}
@@ -24,6 +26,18 @@
     .btn{display:inline-block;padding:12px 18px;border-radius:12px;background:linear-gradient(135deg,#ff4d6d,#ff85a2);color:white;text-decoration:none;font-weight:700;box-shadow:0 8px 20px rgba(255,77,109,0.18); margin-top:10px; transition:0.3s;}
     .btn:hover{transform:scale(1.05);}
     .small{font-size:14px;color:#555555;line-height:1.5}
+  .modal {
+    font-family: 'Poppins', sans-serif; /* changes the whole modal text font */
+  }
+
+  .modal .big {
+     font-family: 'Poppins', sans-serif; /* changes the font of "All hearts caught!" */
+     font-weight: 600; /* optional, makes it slightly bolder */
+  }
+
+  .modal .small {
+    font-family: 'Poppins', sans-serif; /* optional: body text font */
+  }
 
     @media (max-width: 480px) {
       .hud { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 12px; padding: 6px 8px; }
@@ -121,7 +135,7 @@
       audio.play();
       setTimeout(()=>{
         overlay.style.display='flex';
-        overlay.innerHTML=`<div class="modal"><div style="font-size:40px">🎉💖</div><div class="big">All hearts caught!</div><div class="small">You helped Shaaz keep Taiba’s heart safe! 💞<br>They’re celebrating and can’t wait to celebrate with you too!<br><strong>Save the date: 25th December 2025, The Grand Ballroom, Dubai</strong></div><a href="shaazinvite.jpg" target="_blank" class="btn">🎉 Here is the official invite</a><br><button class="btn" id="replay" style="background:#2b6cb0; margin-top:12px">Play Again</button></div>`;
+        overlay.innerHTML=`<div class="modal"><div style="font-size:40px">🎉💖</div><div class="big">All hearts caught!</div><div class="small">You helped Shaaz keep Taiba’s heart safe! 💞<br>They’re celebrating and can’t wait to celebrate with you too!<br><strong>Save the date: 17th December 2025, Adyaar Gardens, Mangalore</strong></div><a href="shaazinvite.jpg" target="_blank" class="btn">🎉 Here is the official invite</a><br><button class="btn" id="replay" style="background:#2b6cb0; margin-top:12px">Play Again</button></div>`;
         document.getElementById('replay').addEventListener('click',()=>{ overlay.style.display='none'; reset(); requestAnimationFrame(loop); });
       },2000);
     }
